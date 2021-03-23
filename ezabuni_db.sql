@@ -1,7 +1,7 @@
-drop database ezabuni;
-drop user ezabuni;
-create user ezabuni with password 'admin';
-create database ezabuni is_template true owner=ezabuni;
+-- drop database ezabuni;
+-- drop user ezabuni;
+-- create user ezabuni with password 'admin';
+-- create database ezabuni is_template true owner=ezabuni;
 \connect ezabuni;
 alter default privileges grant all on tables to ezabuni;
 alter default privileges grant all on sequences to ezabuni;
@@ -23,7 +23,8 @@ departmentid integer
 create table departments (
 departmentid integer primary key not null,
 department_name varchar (50) not null,
-department_description varchar(255)
+department_description varchar(255),
+userid integer
 );
 
 create table tender_request (
@@ -47,6 +48,9 @@ foreign key (departmentid) references departments(departmentid);
 
 alter table users add constraint users_department_fk
 foreign key (departmentid) references departments(departmentid);
+
+alter table departments add constraint users_id_fk
+    foreign key (userid) references users(userid);
 
 create sequence users_seq increment 1 start 1;
 create sequence tender_request_seq increment 1 start 1;

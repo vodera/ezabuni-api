@@ -2,7 +2,8 @@ package com.turubini.ezabuni.repositories.UserRepository;
 
 import com.turubini.ezabuni.domain.User;
 import com.turubini.ezabuni.exceptions.EzAuthException;
-import com.turubini.ezabuni.repositories.UserRepository.UserRepository;
+import com.turubini.ezabuni.exceptions.EzBadRequestException;
+import com.turubini.ezabuni.exceptions.EzResourceNotFoundException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,20 +15,25 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
     private static final String SQL_CREATE = "INSERT INTO USERS(USERID, FIRSTNAME, MIDDLENAME, LASTNAME," +
-            "EMAIL, PASSWORD, PHONENUMBER, COUNTY, DOB, USERNAME) VALUES(NEXTVAL('USERS_SEQ'), ?, ? ,?, ? ,? ,?, ?, ?, ?)";
+            "EMAIL, PASSWORD, PHONENUMBER, COUNTY, DOB, USERNAME, DEPARTMENTID) VALUES(NEXTVAL('USERS_SEQ'), ?, ? ,?, ? ,? ,?, ?, ?, ?, ?)";
 
     private static final String SQL_COUNT_BY_EMAIL = "SELECT COUNT(*) FROM USERS WHERE EMAIL = ?";
 
     private static final String SQL_FIND_BY_ID = "SELECT USERID, FIRSTNAME, MIDDLENAME, LASTNAME, DOB, EMAIL, USERNAME," +
-            "PASSWORD, COUNTY, PHONENUMBER FROM USERS WHERE USERID = ?";
+            "PASSWORD, COUNTY, PHONENUMBER, DEPARTMENTID FROM USERS WHERE USERID = ?";
 
-    private static final String SQL_FIND_BY_EMAIL = "SELECT USERID, FIRSTNAME, MIDDLENAME, LASTNAME, EMAIL, PASSWORD, PHONENUMBER, COUNTY, DOB, USERNAME FROM USERS " +
+    private static final String SQL_FIND_BY_EMAIL = "SELECT USERID, FIRSTNAME, MIDDLENAME, LASTNAME, EMAIL, PASSWORD, PHONENUMBER, COUNTY, DOB, USERNAME, DEPARTMENTID FROM USERS " +
             "WHERE EMAIL = ?";
+
+    public static final String SQL_FIND_ALL="SELECT USERID, FIRSTNAME, MIDDLENAME, LASTNAME, EMAIL, PASSWORD, COUNTY, USERNAME, DOB, PHONENUMBER, DEPARTMENTID FROM USERS GROUP BY USERID";
+    public static final String SQL_UPDATE="UPDATE USERS SET FIRSTNAME = ?, MIDDLENAME = ?, LASTNAME = ?, EMAIL = ?, PASSWORD = ?, COUNTY = ?, USERNAME = ?, DOB = ?, PHONENUMBER = ?, DEPARTMENTID = ?  WHERE USERID = ?";
+    public static final String SQL_DELETE="DELETE FROM USERS WHERE USERID = ?";
 
 
 
@@ -35,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public Integer create( String firstName, String middleName, String lastName, String email, String password, String phoneNumber, String county, String dob, String username ) throws EzAuthException {
+    public Integer create(String firstName, String middleName, String lastName, String email, String password, String phoneNumber, String county, String dob, String username, Integer departmentId) throws EzAuthException {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
         try {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -51,6 +57,7 @@ public class UserRepositoryImpl implements UserRepository {
             ps.setString(7, county);
             ps.setString(8, dob);
             ps.setString(9, username);
+            ps.setInt(10, departmentId);
             return ps;
 
         }, keyHolder);
@@ -68,16 +75,6 @@ public class UserRepositoryImpl implements UserRepository {
             if(!BCrypt.checkpw(password, user.getPassword())){
                     throw new EzAuthException("Invalid email and/or password");
                 }
-//            System.out.println("userid: "+user.getUserId());
-//            System.out.println("password: "+user.getPassword());
-//            System.out.println("county: "+user.getCounty());
-//            System.out.println("email: "+user.getEmail());
-//            System.out.println("dob: "+user.getDob());
-//            System.out.println("firstname: "+user.getFirstName());
-//            System.out.println("middlename: "+user.getMiddleName());
-//            System.out.println("lastname: "+user.getLastName());
-//            System.out.println("phone: "+user.getPhoneNumber());
-//            System.out.println("username: "+user.getUsername());
                 return user;
         }catch (EmptyResultDataAccessException e) {
                throw new EzAuthException("Invalid email and/or password");
@@ -94,6 +91,39 @@ public class UserRepositoryImpl implements UserRepository {
         return jdbcTemplate.queryForObject(SQL_FIND_BY_ID, new Object[]{userId}, userRowMapper);
     }
 
+    @Override
+    public List<User> findAll() throws EzResourceNotFoundException {
+        return jdbcTemplate.query(SQL_FIND_ALL, new Object[]{}, userRowMapper);
+    }
+
+    @Override
+    public void update(Integer userId, User user) throws EzBadRequestException {
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(10));
+        try {
+            jdbcTemplate.update(SQL_UPDATE, new Object[]{
+                    user.getFirstName(),
+                    user.getMiddleName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getCounty(),
+                    user.getUsername(),
+                    user.getDob(),
+                    user.getPhoneNumber(),
+                    user.getDepartmentId(),
+                    userId});
+        }catch (Exception e){
+            throw new EzBadRequestException("Invalid request");
+        }
+    }
+
+    @Override
+    public void removeById(Integer userId) throws EzResourceNotFoundException {
+        int count = jdbcTemplate.update(SQL_DELETE, new Object[]{userId});
+        if(count == 0)
+            throw new EzResourceNotFoundException("User not found");
+    }
+
     private RowMapper<User> userRowMapper =((rs, rowNum) -> {
        return new User(
                rs.getInt("USERID"),
@@ -105,7 +135,8 @@ public class UserRepositoryImpl implements UserRepository {
                rs.getString("PHONENUMBER"),
                rs.getString("COUNTY"),
                rs.getString("DOB"),
-               rs.getString("USERNAME")
+               rs.getString("USERNAME"),
+               rs.getInt("DEPARTMENTID")
 
        );
     });

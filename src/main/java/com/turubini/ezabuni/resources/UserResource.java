@@ -8,13 +8,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,13 +45,42 @@ public class UserResource {
         String county = (String) userMap.get("county");
         String dob = (String) userMap.get("dob");
         String username = (String) userMap.get("username");
+        Integer departmentId = (Integer) userMap.get("departmentId");
 
 
-        User user = userService.registerUser(firstName, middleName, lastName, email, password, phoneNumber, county, dob, username );
+        User user = userService.registerUser(firstName, middleName, lastName, email, password, phoneNumber, county, dob, username, departmentId );
 //        Map<String, String> map = new HashMap<>();
 //        map.put("message", "registered successfully");
 
         return new ResponseEntity<>(generateJWTToken(user), HttpStatus.OK);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<User>> getAllUsers(HttpServletRequest request) {
+//        int userId = (Integer) request.getAttribute("userId");
+        List<User> users = userService.fetchAllUsersByUserId();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<Map<String, Boolean>> updateUser(HttpServletRequest request,
+                                                                 @PathVariable("userId") Integer userId,
+                                                                 @RequestBody User user) {
+//        int userId = (Integer) request.getAttribute("userId");
+        userService.updateUser(userId, user);
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("success", true);
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Map<String, Boolean>> deleteUser(HttpServletRequest request,
+                                                                 @PathVariable("userId") Integer userId) {
+//        int userId = (Integer) request.getAttribute("userId");
+        userService.removeUser(userId);
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("success", true);
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
     private Map<String, String> generateJWTToken (User user) {
@@ -69,6 +97,7 @@ public class UserResource {
                 .claim("username", user.getUsername())
                 .claim("county", user.getCounty())
                 .claim("dob", user.getDob())
+                .claim("departmentId", user.getDepartmentId())
                 .compact();
         Map<String, String> map = new HashMap<>();
         map.put("token", token);

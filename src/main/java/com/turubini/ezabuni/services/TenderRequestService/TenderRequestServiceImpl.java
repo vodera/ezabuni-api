@@ -1,9 +1,9 @@
-package com.turubini.ezabuni.services;
+package com.turubini.ezabuni.services.TenderRequestService;
 
 import com.turubini.ezabuni.domain.TenderRequest;
 import com.turubini.ezabuni.exceptions.EzBadRequestException;
 import com.turubini.ezabuni.exceptions.EzResourceNotFoundException;
-import com.turubini.ezabuni.repositories.TenderRequestRepository;
+import com.turubini.ezabuni.repositories.TenderRequestRepository.TenderRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

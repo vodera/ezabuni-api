@@ -1,7 +1,7 @@
 package com.turubini.ezabuni.resources;
 
 import com.turubini.ezabuni.domain.TenderRequest;
-import com.turubini.ezabuni.services.TenderRequestService;
+import com.turubini.ezabuni.services.TenderRequestService.TenderRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

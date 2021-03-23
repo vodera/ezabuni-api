@@ -1,4 +1,4 @@
-package com.turubini.ezabuni.services;
+package com.turubini.ezabuni.services.TenderRequestService;
 
 import com.turubini.ezabuni.domain.TenderRequest;
 import com.turubini.ezabuni.exceptions.EzBadRequestException;
@@ -7,9 +7,6 @@ import com.turubini.ezabuni.exceptions.EzResourceNotFoundException;
 import java.util.List;
 
 public interface TenderRequestService {
-
-    //fetch all tender requests by passing departmentId as the parameter
-    //List<TenderRequest> fetchAllTenderRequestsByDepartmentId (Integer departmentId);
 
     //fetch all tender requests by passing user as the parameter
     List<TenderRequest> fetchAllTenderRequestsByUserId (Integer userId);

@@ -1,4 +1,4 @@
-package com.turubini.ezabuni.repositories;
+package com.turubini.ezabuni.repositories.TenderRequestRepository;
 
 import com.turubini.ezabuni.domain.TenderRequest;
 import com.turubini.ezabuni.exceptions.EzBadRequestException;

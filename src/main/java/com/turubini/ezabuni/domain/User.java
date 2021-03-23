@@ -14,6 +14,7 @@ public class User {
     private String county;
     private String dob;
     private String username;
+    private Integer departmentId;
 
 
     public Integer getUserId() {
@@ -96,7 +97,15 @@ public class User {
         this.username = username;
     }
 
-    public User(Integer userId, String firstName, String middleName, String lastName, String email, String password, String phoneNumber, String county, String dob, String username) {
+    public Integer getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(Integer departmentId) {
+        this.departmentId = departmentId;
+    }
+
+    public User(Integer userId, String firstName, String middleName, String lastName, String email, String password, String phoneNumber, String county, String dob, String username, int departmentId) {
         this.userId = userId;
         this.firstName = firstName;
         this.middleName = middleName;
@@ -107,5 +116,6 @@ public class User {
         this.county = county;
         this.dob = dob;
         this.username = username;
+        this.departmentId = departmentId;
     }
 }

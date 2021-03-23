@@ -37,6 +37,7 @@ public class EzabuniApiApplication {
 		AuthFilter authFilter = new AuthFilter();
 		registrationBean.setFilter(authFilter);
 		registrationBean.addUrlPatterns("/api/tender_request/*");
+		registrationBean.addUrlPatterns("/api/department/*");
 		return registrationBean;
 	}
 }
